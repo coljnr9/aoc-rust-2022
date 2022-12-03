@@ -4,28 +4,30 @@ fn load_input_file() -> String {
     fs::read_to_string("src/day1/input.txt").expect("Failed to read input file")
 }
 
-fn process_input_string(input: String) -> u32 {
+fn sum_top_three_elves(input: String) -> u32 {
     let strings = input.split("\n\n");
     let strings = strings.map(|s| s.split('\n'));
 
-    let mut max_sum = 0;
+    let mut elf_cals: Vec<u32> = Vec::default();
+
     for string in strings {
-        let mut elf_calories = 0;
+        let mut this_elf_cals = 0;
         for s in string {
             match s.parse::<u32>() {
-                Ok(v) => elf_calories += v,
+                Ok(v) => this_elf_cals += v,
                 Err(_) => eprintln!("ruh roh"),
             }
         }
-        if elf_calories > max_sum {
-            max_sum = elf_calories;
-        }
+        elf_cals.push(this_elf_cals);
     }
-    max_sum
+    elf_cals.sort();
+    elf_cals.reverse();
+    let v: u32 = elf_cals[..3].iter().sum();
+    v
 }
 
 fn main() {
     let input_str = load_input_file();
-    let best_elf = process_input_string(input_str);
+    let best_elf = sum_top_three_elves(input_str);
     println!("{:?}", best_elf);
 }
