@@ -1,5 +1,6 @@
 use std::collections::hash_set::HashSet;
 use std::fs;
+use itertools::Itertools;
 
 static ASCII_LOWER: [char; 26] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
@@ -13,6 +14,7 @@ static ASCII_UPPER: [char; 26] = [
 #[derive(Debug)]
 struct Rucksack {
     compartments: Vec<HashSet<char>>,
+    all_items: HashSet<char>,
 }
 
 trait CharExt {
@@ -35,13 +37,19 @@ impl Rucksack {
 
         let mut container1 = HashSet::new();
         let mut container2 = HashSet::new();
+
+        let mut all_items = HashSet::new();
         while let (Some(c1), Some(c2)) = (chars.next(), chars.next_back()) {
             container1.insert(c1);
             container2.insert(c2);
+
+            all_items.insert(c1);
+            all_items.insert(c2);
         }
 
         Rucksack {
             compartments: vec![container1, container2],
+            all_items
         }
     }
 
@@ -63,6 +71,13 @@ fn error_priority_sum(rucksacks: Vec<Rucksack>) -> u32 {
     priority_sum
 }
 
+fn find_badge_type(rucksack1: &mut Rucksack, rucksack2: &Rucksack, rucksack3: &Rucksack) -> char {
+    rucksack1.all_items.retain(|item| rucksack2.all_items.contains(item));    
+    rucksack1.all_items.retain(|item| rucksack3.all_items.contains(item));
+
+    *rucksack1.all_items.iter().last().unwrap()
+}
+
 fn load_rucksacks() -> Vec<Rucksack> {
     let raw_string = fs::read_to_string("src/day3/input.txt").expect("Failed to read input file");
     let lines = raw_string.split('\n');
@@ -79,6 +94,14 @@ fn main() {
     println!("Day 3!");
     let rucksacks = load_rucksacks();
     println!("{:?}", error_priority_sum(rucksacks));
+
+    let mut error_sum = 0;
+    let mut rucksacks = load_rucksacks();
+    for (r1, r2, r3) in rucksacks.iter_mut().tuples() {
+        error_sum += find_badge_type(r1, r2, r3).priority();
+    }
+
+    println!("{:?}", error_sum);
 }
 
 #[cfg(test)]
@@ -165,5 +188,35 @@ mod tests {
         ];
         let sum_of_priorities = error_priority_sum(rucksacks);
         assert_eq!(sum_of_priorities, 157);
+    }
+
+    #[test]
+    fn test_find_badge_type() {
+        let mut rucksack1 = Rucksack::from_str("vJrwpWtwJgWrhcsFMMfFFhFp");
+        let rucksack2 = Rucksack::from_str("jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL");
+        let rucksack3 = Rucksack::from_str("PmmdzqPrVvPwwTWBwg");
+
+        assert_eq!(find_badge_type(&mut rucksack1, &rucksack2, &rucksack3), 'r');
+
+        let mut rucksack4 = Rucksack::from_str("wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn");
+        let rucksack5 = Rucksack::from_str("ttgJtRGJQctTZtZT");
+        let rucksack6 = Rucksack::from_str("CrZsJsPPZsGzwwsLwLmpwMDw");
+        assert_eq!(find_badge_type(&mut rucksack4, &rucksack5, &rucksack6), 'Z');
+    }
+
+    #[test]
+    fn test_error_sum_day2() {
+        let mut rucksack1 = Rucksack::from_str("vJrwpWtwJgWrhcsFMMfFFhFp");
+        let rucksack2 = Rucksack::from_str("jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL");
+        let rucksack3 = Rucksack::from_str("PmmdzqPrVvPwwTWBwg");
+
+        let mut error_sum = find_badge_type(&mut rucksack1, &rucksack2, &rucksack3).priority();
+
+        let mut rucksack4 = Rucksack::from_str("wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn");
+        let rucksack5 = Rucksack::from_str("ttgJtRGJQctTZtZT");
+        let rucksack6 = Rucksack::from_str("CrZsJsPPZsGzwwsLwLmpwMDw");
+        error_sum += find_badge_type(&mut rucksack4, &rucksack5, &rucksack6).priority();
+
+        assert_eq!(error_sum, 70);
     }
 }
