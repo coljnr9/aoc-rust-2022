@@ -1,3 +1,9 @@
+//!
+//! Solutions for 2022 Advent-of-Code
+//! 
+//! Day 5 parts 1/2
+
+
 /*
 Crate Label ->          [D]
 Crate Label ->      [N] [C]
@@ -18,21 +24,39 @@ use std::fs;
 type Crate = char;
 type Stack = Vec<Crate>;
 
+
+/// An "instruction" as described in the Day 5 AoC problem.
+///
+/// This represents what is described by a string such as
+/// 
+/// "move 1 from 2 to 1"
 #[derive(Debug, PartialEq, Eq, Clone)]
 struct Instruction {
+    /// The number of crates to move
     count: usize,
+    /// The source stack number (1-N)
     from: usize,
+    /// The destination stack number (1-N)
     to: usize,
 }
 
 impl Instruction {
+    /// Create an Instruction from the problem string.  The only supported
+    /// format is 
+    /// 
+    /// `"move N from A to B"`
+    /// 
+    /// where N < 0
+    /// 
+    /// A <= 1
+    /// 
+    /// B <= 1
     fn from_str(input_str: &str) -> Self {
         lazy_static! {
             static ref INST_RE: Regex = Regex::new(r"^move (\d+) from (\d+) to (\d+)$").unwrap();
         }
 
         let cap = INST_RE.captures_iter(input_str).next().unwrap();
-        println!("Num: {}, From: {}, To: {}", &cap[1], &cap[2], &cap[3]);
 
         let count = cap[1].parse::<usize>().unwrap();
         let from = cap[2].parse::<usize>().unwrap();
@@ -42,6 +66,10 @@ impl Instruction {
     }
 }
 
+/// Struct-representation of The Problem.
+/// This structure holds the `stacks` of `crates`, 
+/// as well as the list of `instruction` as described
+/// in the problem.
 #[derive(Debug, PartialEq, Eq, Clone)]
 struct Problem {
     stacks: Vec<Stack>,
@@ -52,13 +80,24 @@ trait StackExt {
     fn from_str(input_str: &str) -> Stack;
 }
 
-impl StackExt for Stack {
-    fn from_str(input_str: &str) -> Stack {
-        todo!()
-    }
-}
-
 impl Problem {
+    /// Create a new `Problem` from the input string
+    /// (as formatted on AoC).  The _only_ supported format
+    /// is 
+    /// 
+    /// ```
+    /// r"#
+    ///     [D]    
+    /// [N] [C]    
+    /// [Z] [M] [P]
+    ///  1   2   3 
+    /// 
+    /// move 1 from 2 to 1
+    /// move 3 from 1 to 3
+    /// move 2 from 2 to 1
+    /// move 1 from 1 to 2#"
+    /// ```
+    /// but extended to more crates/stacks/instructions.
     fn from_str(input_str: &str) -> Self {
         let mut splits = input_str.split("\n\n");
         let stacks_str = splits.next().unwrap();
@@ -76,6 +115,14 @@ impl Problem {
         }
     }
 
+    /// Create the stacks from the top section of the input string, i.e.:
+    /// ```
+    /// r"#
+    ///     [D]    
+    /// [N] [C]    
+    /// [Z] [M] [P]
+    ///  1   2   3 #"
+    /// ```
     fn stacks_from_str(input_str: &str) -> Vec<Stack> {
         /*
         Expected input string ex
@@ -117,6 +164,9 @@ impl Problem {
         out
     }
 
+    /// Run the solving algorithm (just following the instructions).
+    /// 
+    /// Update this to solve part 1 vs part 2 (multi-crate pick-up)
     fn solve(&self) -> Problem {
         let mut out = self.clone();
         for instruction in &self.instructions {
@@ -134,15 +184,17 @@ impl Problem {
         out
     }
 
+    /// Print the solution, copy-pastable into AoC
+    /// 
+    /// ```Answer: PQTJRSHWS```
     fn display_answer(&self) {
         print!("Answer: ");
         for stack in &self.stacks {
             print!("{}", stack.last().unwrap());
         }
-        print!("\n");
+        println!();
     }
 }
-
 
 fn load_problem_from_file() -> Problem {
     let raw_string = fs::read_to_string("/home/cole/rust/advent2022/src/day5/input.txt")
@@ -154,7 +206,6 @@ fn main() {
     let problem = load_problem_from_file();
     let problem = problem.solve();
     problem.display_answer();
-
 }
 
 #[cfg(test)]
