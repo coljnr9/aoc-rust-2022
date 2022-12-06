@@ -1,8 +1,8 @@
+
 //!
 //! Solutions for 2022 Advent-of-Code
 //! 
 //! Day 5 parts 1/2
-
 
 /*
 Crate Label ->          [D]
@@ -23,6 +23,7 @@ use std::fs;
 
 type Crate = char;
 type Stack = Vec<Crate>;
+
 
 
 /// An "instruction" as described in the Day 5 AoC problem.
@@ -51,6 +52,7 @@ impl Instruction {
     /// A <= 1
     /// 
     /// B <= 1
+
     fn from_str(input_str: &str) -> Self {
         lazy_static! {
             static ref INST_RE: Regex = Regex::new(r"^move (\d+) from (\d+) to (\d+)$").unwrap();
@@ -70,6 +72,7 @@ impl Instruction {
 /// This structure holds the `stacks` of `crates`, 
 /// as well as the list of `instruction` as described
 /// in the problem.
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 struct Problem {
     stacks: Vec<Stack>,
@@ -114,6 +117,7 @@ impl Problem {
             instructions,
         }
     }
+
 
     /// Create the stacks from the top section of the input string, i.e.:
     /// ```
@@ -183,6 +187,7 @@ impl Problem {
 
         out
     }
+
 
     /// Print the solution, copy-pastable into AoC
     /// 
